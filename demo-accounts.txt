@@ -1,0 +1,21 @@
+Demo Accounts (Medical Clinic Prototype)
+
+Username: reception1
+Password: clinic123
+Role: Receptionist
+
+Username: nurse1
+Password: clinic123
+Role: Enrolled Nurse
+
+Username: clinician1
+Password: clinic123
+Role: Nurse/Clinician
+
+Username: doctor1
+Password: clinic123
+Role: Doctor/Clinician
+
+Username: admin1
+Password: clinic123
+Role: Admin

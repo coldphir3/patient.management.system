@@ -21,9 +21,18 @@ const ALLOWED_VIEWS = {
   "Doctor/Clinician": ["diagnosis", "reports"],
   Admin: ["reception", "vitals", "exam", "diagnosis", "reports"]
 };
+const AUTH_STORAGE_KEY = "clinic-auth-user";
+const AUTH_USERS = [
+  { username: "reception1", password: "clinic123", role: "Receptionist", name: "Reception User" },
+  { username: "nurse1", password: "clinic123", role: "Enrolled Nurse", name: "Enrolled Nurse" },
+  { username: "clinician1", password: "clinic123", role: "Nurse/Clinician", name: "Clinic Nurse" },
+  { username: "doctor1", password: "clinic123", role: "Doctor/Clinician", name: "Clinic Doctor" },
+  { username: "admin1", password: "clinic123", role: "Admin", name: "System Admin" }
+];
 
 const state = {
-  role: "Receptionist",
+  role: null,
+  currentUser: null,
   patients: [],
   audit: [],
   idCounter: 22,
@@ -46,14 +55,10 @@ const NAV_INACTIVE_CLASSES = [
   "ring-1",
   "ring-slate-200",
   "hover:bg-slate-100",
-  "dark:bg-slate-800",
-  "dark:text-slate-300",
-  "dark:ring-slate-700",
-  "dark:hover:bg-slate-700"
 ];
 
 const BUTTON_PRIMARY_SM = "inline-flex items-center rounded-lg bg-gradient-to-br from-clinic-600 to-clinic-700 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:brightness-105";
-const BUTTON_SECONDARY_SM = "inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800";
+const BUTTON_SECONDARY_SM = "inline-flex items-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50";
 
 const CONTROL_CLASSES = [
   "w-full",
@@ -70,17 +75,21 @@ const CONTROL_CLASSES = [
   "focus:border-clinic-600",
   "focus:ring-2",
   "focus:ring-cyan-100",
-  "dark:border-slate-700",
-  "dark:bg-slate-900",
-  "dark:text-slate-100"
 ];
-const ICON_MOON = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg>`;
-const ICON_SUN = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41 1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path></svg>`;
 
 const el = {
-  roleSelect: document.getElementById("roleSelect"),
-  themeToggle: document.getElementById("themeToggle"),
-  themeToggleIcon: document.getElementById("themeToggleIcon"),
+  currentUserName: document.getElementById("currentUserName"),
+  currentUserRole: document.getElementById("currentUserRole"),
+  profileMenuToggle: document.getElementById("profileMenuToggle"),
+  profileMenu: document.getElementById("profileMenu"),
+  profileSettingsBtn: document.getElementById("profileSettingsBtn"),
+  logoutBtn: document.getElementById("logoutBtn"),
+  appRoot: document.getElementById("appRoot"),
+  loginOverlay: document.getElementById("loginOverlay"),
+  loginForm: document.getElementById("loginForm"),
+  loginUsername: document.getElementById("loginUsername"),
+  loginPassword: document.getElementById("loginPassword"),
+  loginError: document.getElementById("loginError"),
   navButtons: Array.from(document.querySelectorAll(".nav-btn")),
   views: Array.from(document.querySelectorAll(".view")),
   alerts: document.getElementById("alerts"),
@@ -148,11 +157,10 @@ const el = {
 };
 
 function init() {
-  initTheme();
   applyControlStyles();
   resetState();
   bindEvents();
-  applyRole("Receptionist");
+  initAuth();
   renderAll();
 }
 
@@ -165,36 +173,196 @@ function applyControlStyles() {
     textarea.classList.add("min-h-[96px]", "resize-y");
   });
 }
-function initTheme() {
-  const isDark = document.documentElement.classList.contains("dark");
-  updateThemeToggle(isDark);
+function initAuth() {
+  let savedUsername = "";
+  try {
+    savedUsername = localStorage.getItem(AUTH_STORAGE_KEY) || "";
+  } catch (_e) {}
 
-  if (el.themeToggle) {
-    el.themeToggle.addEventListener("click", toggleTheme);
+  const existing = AUTH_USERS.find((u) => u.username === savedUsername);
+  if (existing) {
+    startSession(existing, false);
+    return;
+  }
+
+  showLoginOverlay();
+  updateNavPermissions();
+  updateCurrentUserPanel();
+}
+
+function showLoginOverlay() {
+  if (el.loginOverlay) {
+    el.loginOverlay.classList.remove("hidden");
+  }
+  if (el.appRoot) {
+    el.appRoot.classList.add("pointer-events-none", "select-none", "blur-[1px]", "opacity-70");
   }
 }
 
-function toggleTheme() {
-  const root = document.documentElement;
-  const willBeDark = !root.classList.contains("dark");
-  root.classList.toggle("dark", willBeDark);
+function hideLoginOverlay() {
+  if (el.loginOverlay) {
+    el.loginOverlay.classList.add("hidden");
+  }
+  if (el.appRoot) {
+    el.appRoot.classList.remove("pointer-events-none", "select-none", "blur-[1px]", "opacity-70");
+  }
+}
+
+function setLoginError(message = "") {
+  if (!el.loginError) return;
+  if (!message) {
+    el.loginError.textContent = "";
+    el.loginError.classList.add("hidden");
+    return;
+  }
+  el.loginError.textContent = message;
+  el.loginError.classList.remove("hidden");
+}
+
+function onLoginSubmit(event) {
+  event.preventDefault();
+
+  const username = (el.loginUsername?.value || "").trim().toLowerCase();
+  const password = el.loginPassword?.value || "";
+
+  const user = AUTH_USERS.find((u) => u.username.toLowerCase() === username && u.password === password);
+  if (!user) {
+    setLoginError("Invalid username or password.");
+    return;
+  }
+
+  setLoginError("");
+  if (el.loginPassword) el.loginPassword.value = "";
+  startSession(user, true);
+}
+
+function startSession(user, announce = true) {
+  state.currentUser = {
+    username: user.username,
+    role: user.role,
+    name: user.name
+  };
+  state.role = user.role;
 
   try {
-    localStorage.setItem("clinic-theme", willBeDark ? "dark" : "light");
+    localStorage.setItem(AUTH_STORAGE_KEY, user.username);
   } catch (_e) {}
 
-  updateThemeToggle(willBeDark);
+  updateCurrentUserPanel();
+  closeProfileMenu();
+  hideLoginOverlay();
+  applyRole(user.role);
+
+  if (announce) {
+    showAlert(`Signed in as ${user.name} (${user.role}).`, "info");
+  }
 }
 
-function updateThemeToggle(isDark) {
-  if (!el.themeToggle || !el.themeToggleIcon) return;
+function endSession(announce = true) {
+  state.currentUser = null;
+  state.role = null;
 
-  el.themeToggleIcon.innerHTML = isDark ? ICON_SUN : ICON_MOON;
+  try {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch (_e) {}
 
-  const label = isDark ? "Switch to light mode" : "Switch to dark mode";
-  el.themeToggle.setAttribute("aria-label", label);
-  el.themeToggle.setAttribute("title", label);
+  updateCurrentUserPanel();
+  closeProfileMenu();
+  updateNavPermissions();
+  showLoginOverlay();
+  setLoginError("");
+  if (el.loginUsername) el.loginUsername.value = "";
+  if (el.loginPassword) el.loginPassword.value = "";
+
+  if (announce) {
+    showAlert("You have been logged out.", "info");
+  }
 }
+
+function updateCurrentUserPanel() {
+  const isSignedIn = Boolean(state.currentUser);
+
+  if (el.currentUserName) {
+    el.currentUserName.textContent = isSignedIn ? state.currentUser.name : "Not signed in";
+  }
+  if (el.currentUserRole) {
+    el.currentUserRole.textContent = `Role: ${isSignedIn ? state.currentUser.role : "-"}`;
+  }
+
+  if (el.profileMenuToggle) {
+    el.profileMenuToggle.disabled = !isSignedIn;
+    el.profileMenuToggle.classList.toggle("opacity-70", !isSignedIn);
+    el.profileMenuToggle.classList.toggle("cursor-not-allowed", !isSignedIn);
+  }
+
+  if (!isSignedIn) {
+    closeProfileMenu();
+  }
+}
+
+function toggleProfileMenu(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (!state.currentUser || !el.profileMenu || !el.profileMenuToggle) {
+    return;
+  }
+
+  if (el.profileMenu.classList.contains("hidden")) {
+    openProfileMenu();
+  } else {
+    closeProfileMenu();
+  }
+}
+
+function openProfileMenu() {
+  if (!el.profileMenu || !el.profileMenuToggle) return;
+  el.profileMenu.classList.remove("hidden");
+  el.profileMenuToggle.setAttribute("aria-expanded", "true");
+}
+
+function closeProfileMenu() {
+  if (!el.profileMenu || !el.profileMenuToggle) return;
+  el.profileMenu.classList.add("hidden");
+  el.profileMenuToggle.setAttribute("aria-expanded", "false");
+}
+
+function onProfileMenuDocumentClick(event) {
+  if (!el.profileMenu || !el.profileMenuToggle) return;
+  const target = event.target;
+
+  if (el.profileMenu.contains(target) || el.profileMenuToggle.contains(target)) {
+    return;
+  }
+
+  closeProfileMenu();
+}
+
+function onProfileMenuKeydown(event) {
+  if (event.key === "Escape") {
+    closeProfileMenu();
+  }
+}
+
+function onProfileSettingsClick() {
+  closeProfileMenu();
+  showAlert("Profile settings is not available in this prototype yet.", "info");
+}
+function actorName() {
+  if (state.currentUser?.name) return state.currentUser.name;
+  if (state.role) return state.role;
+  return "System";
+}
+
+function actorHistoryLabel() {
+  if (state.currentUser?.name && state.currentUser?.role) {
+    return `${state.currentUser.name} (${state.currentUser.role})`;
+  }
+  return state.role || "System";
+}
+
 function resetState() {
   const seed = createSeedPatients();
   state.patients = seed;
@@ -348,19 +516,38 @@ function createSeedPatients() {
 }
 
 function bindEvents() {
-  el.roleSelect.addEventListener("change", (event) => {
-    applyRole(event.target.value);
-    showAlert(`Role switched to ${event.target.value}.`, "info");
-  });
-
   el.navButtons.forEach((btn) => {
     btn.addEventListener("click", () => setActiveView(btn.dataset.view));
   });
 
+  if (el.loginForm) {
+    el.loginForm.addEventListener("submit", onLoginSubmit);
+  }
+
+  if (el.profileMenuToggle) {
+    el.profileMenuToggle.addEventListener("click", toggleProfileMenu);
+  }
+
+  if (el.profileSettingsBtn) {
+    el.profileSettingsBtn.addEventListener("click", onProfileSettingsClick);
+  }
+
+  if (el.logoutBtn) {
+    el.logoutBtn.addEventListener("click", () => {
+      closeProfileMenu();
+      endSession(true);
+    });
+  }
+
+  document.addEventListener("click", onProfileMenuDocumentClick);
+  document.addEventListener("keydown", onProfileMenuKeydown);
+
   if (el.resetDemoBtn) {
     el.resetDemoBtn.addEventListener("click", () => {
       resetState();
-      applyRole("Receptionist");
+      if (state.currentUser?.role) {
+        applyRole(state.currentUser.role);
+      }
       renderAll();
       showAlert("Demo dataset reset.", "info");
     });
@@ -388,12 +575,30 @@ function bindEvents() {
 }
 function applyRole(role) {
   state.role = role;
-  el.roleSelect.value = role;
-  setActiveView(VIEW_BY_ROLE[role], true);
+  updateNavPermissions();
+  if (VIEW_BY_ROLE[role]) {
+    setActiveView(VIEW_BY_ROLE[role], true);
+  }
+}
+
+function updateNavPermissions() {
+  const allowed = state.role ? (ALLOWED_VIEWS[state.role] || []) : [];
+
+  el.navButtons.forEach((btn) => {
+    const canAccess = allowed.includes(btn.dataset.view);
+    btn.disabled = !canAccess;
+    btn.classList.toggle("opacity-40", !canAccess);
+    btn.classList.toggle("cursor-not-allowed", !canAccess);
+  });
 }
 
 function setActiveView(view, force = false) {
-  if (!force && !ALLOWED_VIEWS[state.role].includes(view)) {
+  if (!state.role) {
+    return;
+  }
+
+  const allowed = ALLOWED_VIEWS[state.role] || [];
+  if (!force && !allowed.includes(view)) {
     showAlert(`Access denied for ${state.role}.`, "error");
     return;
   }
@@ -661,7 +866,7 @@ function renderAttachmentNames(existing = null) {
 
   el.attachmentList.innerHTML = names.length
     ? names.map((name) => `<span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">${escapeHtml(name)}</span>`).join("")
-    : '<span class="text-sm text-slate-500 dark:text-slate-400">No attachments selected.</span>';
+    : '<span class="text-sm text-slate-500">No attachments selected.</span>';
 }
 
 function onDiagnosisQueueAction(event) {
@@ -730,6 +935,12 @@ function clearDiagnosisForm() {
 }
 
 function canPerform(requiredRole) {
+  if (!state.currentUser || !state.role) {
+    showLoginOverlay();
+    showAlert("You must sign in first.", "error");
+    return false;
+  }
+
   if (state.role === requiredRole || state.role === "Admin") return true;
   showAlert(`Only ${requiredRole} can perform this action.`, "error");
   return false;
@@ -753,16 +964,16 @@ function renderSearchTable() {
   el.patientSearchBody.innerHTML = matches.length
     ? matches.map((p) => `
         <tr>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(fullName(p))}<br><span class="text-slate-500 dark:text-slate-400">${escapeHtml(p.id)}</span></td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(p.phone || "-")}</td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${statusBadge(p.status)}</td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(fullName(p))}<br><span class="text-slate-500">${escapeHtml(p.id)}</span></td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(p.phone || "-")}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${statusBadge(p.status)}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">
             <button class="${BUTTON_SECONDARY_SM}" data-action="load" data-id="${p.id}">Load</button>
             <button class="${BUTTON_SECONDARY_SM}" data-action="queue" data-id="${p.id}">Queue Vitals</button>
           </td>
         </tr>
       `).join("")
-    : "<tr><td colspan='4' class='text-slate-500 dark:text-slate-400'>No patients found.</td></tr>";
+    : "<tr><td colspan='4' class='text-slate-500 patients found.</td></tr>";
 
   buildHistoryPatientSelect();
 }
@@ -772,13 +983,13 @@ function renderVitalsQueue() {
   el.vitalsQueueBody.innerHTML = queue.length
     ? queue.map((p) => `
       <tr>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${p.id}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(fullName(p))}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${statusBadge(p.status)}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${p.id}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(fullName(p))}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${statusBadge(p.status)}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
       </tr>
     `).join("")
-    : "<tr><td colspan='4' class='text-slate-500 dark:text-slate-400'>No patients are waiting for vitals.</td></tr>";
+    : "<tr><td colspan='4' class='text-slate-500 patients are waiting for vitals.</td></tr>";
 }
 
 function renderExamQueue() {
@@ -786,13 +997,13 @@ function renderExamQueue() {
   el.examQueueBody.innerHTML = queue.length
     ? queue.map((p) => `
       <tr>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${p.id}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(fullName(p))}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${statusBadge(p.status)}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${p.id}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(fullName(p))}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${statusBadge(p.status)}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
       </tr>
     `).join("")
-    : "<tr><td colspan='4' class='text-slate-500 dark:text-slate-400'>No patients are waiting for examination.</td></tr>";
+    : "<tr><td colspan='4' class='text-slate-500 patients are waiting for examination.</td></tr>";
 }
 
 function renderDiagnosisQueue() {
@@ -800,13 +1011,13 @@ function renderDiagnosisQueue() {
   el.diagnosisQueueBody.innerHTML = queue.length
     ? queue.map((p) => `
       <tr>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${p.id}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(fullName(p))}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${statusBadge(p.status)}</td>
-        <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${p.id}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(fullName(p))}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700">${statusBadge(p.status)}</td>
+        <td class="px-3 py-2 align-top text-sm text-slate-700"><button class="${BUTTON_PRIMARY_SM}" data-id="${p.id}">Select</button></td>
       </tr>
     `).join("")
-    : "<tr><td colspan='4' class='text-slate-500 dark:text-slate-400'>No patients are waiting for diagnosis.</td></tr>";
+    : "<tr><td colspan='4' class='text-slate-500 patients are waiting for diagnosis.</td></tr>";
 }
 
 function renderReports() {
@@ -822,12 +1033,12 @@ function renderReports() {
   const avgTemp = average(vitalsSet.map((p) => Number(p.vitals.temperature || 0))).toFixed(1);
 
   el.reportCards.innerHTML = `
-    <div class="rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900 dark:border-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200">Total Patients<strong class="mt-1 block text-2xl font-semibold text-clinic-700 dark:text-cyan-100">${total}</strong></div>
-    <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">Waiting for Vitals<strong class="mt-1 block text-2xl font-semibold text-amber-700 dark:text-amber-100">${waitingVitals}</strong></div>
-    <div class="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/60 dark:text-sky-200">Waiting for Examination<strong class="mt-1 block text-2xl font-semibold text-sky-700 dark:text-sky-100">${waitingExam}</strong></div>
-    <div class="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900 dark:border-violet-900 dark:bg-violet-950/60 dark:text-violet-200">Waiting for Diagnosis<strong class="mt-1 block text-2xl font-semibold text-violet-700 dark:text-violet-100">${waitingDiagnosis}</strong></div>
-    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-200">Consultation Complete<strong class="mt-1 block text-2xl font-semibold text-emerald-700 dark:text-emerald-100">${complete}</strong></div>
-    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">Avg SpO2 / Pulse / Temp<strong class="mt-1 block text-xl font-semibold text-slate-900 dark:text-slate-100">${safeNumber(avgSpo2)} / ${safeNumber(avgPulse)} / ${safeNumber(avgTemp)}</strong></div>
+    <div class="rounded-xl border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-900">Total Patients<strong class="mt-1 block text-2xl font-semibold text-clinic-700">${total}</strong></div>
+    <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Waiting for Vitals<strong class="mt-1 block text-2xl font-semibold text-amber-700">${waitingVitals}</strong></div>
+    <div class="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">Waiting for Examination<strong class="mt-1 block text-2xl font-semibold text-sky-700">${waitingExam}</strong></div>
+    <div class="rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-900">Waiting for Diagnosis<strong class="mt-1 block text-2xl font-semibold text-violet-700">${waitingDiagnosis}</strong></div>
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">Consultation Complete<strong class="mt-1 block text-2xl font-semibold text-emerald-700">${complete}</strong></div>
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">Avg SpO2 / Pulse / Temp<strong class="mt-1 block text-xl font-semibold text-slate-900">${safeNumber(avgSpo2)} / ${safeNumber(avgPulse)} / ${safeNumber(avgTemp)}</strong></div>
   `;
 
   renderDiagnosisSummary();
@@ -846,8 +1057,8 @@ function renderDiagnosisSummary() {
 
   const rows = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   el.diagnosisSummaryBody.innerHTML = rows.length
-    ? rows.map(([diagnosis, count]) => `<tr><td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(diagnosis)}</td><td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${count}</td></tr>`).join("")
-    : "<tr><td colspan='2' class='text-slate-500 dark:text-slate-400'>No diagnosis records yet.</td></tr>";
+    ? rows.map(([diagnosis, count]) => `<tr><td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(diagnosis)}</td><td class="px-3 py-2 align-top text-sm text-slate-700">${count}</td></tr>`).join("")
+    : "<tr><td colspan='2' class='text-slate-500 diagnosis records yet.</td></tr>";
 }
 
 function buildHistoryPatientSelect() {
@@ -864,7 +1075,7 @@ function buildHistoryPatientSelect() {
 function renderHistoryTimeline() {
   const selectedId = el.historyPatientSelect.value || state.patients[0]?.id;
   if (!selectedId) {
-    el.historyTimeline.innerHTML = "<li class='text-slate-500 dark:text-slate-400'>No patient selected.</li>";
+    el.historyTimeline.innerHTML = "<li class='text-slate-500 patient selected.</li>";
     return;
   }
 
@@ -878,9 +1089,9 @@ function renderHistoryTimeline() {
   const items = [...patient.history].sort((a, b) => new Date(b.time) - new Date(a.time));
   el.historyTimeline.innerHTML = items.length
     ? items
-      .map((entry) => `<li class="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><strong>${escapeHtml(prettyDate(entry.time))}</strong><br>${escapeHtml(entry.action)}<br><span class='text-slate-500 dark:text-slate-400'>By ${escapeHtml(entry.user)}</span></li>`)
+      .map((entry) => `<li class="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700"><strong>${escapeHtml(prettyDate(entry.time))}</strong><br>${escapeHtml(entry.action)}<br><span class='text-slate-500 ${escapeHtml(entry.user)}</span></li>`)
       .join("")
-    : "<li class='text-slate-500 dark:text-slate-400'>No history entries.</li>";
+    : "<li class='text-slate-500 history entries.</li>";
 }
 
 function renderAuditTrail() {
@@ -890,14 +1101,14 @@ function renderAuditTrail() {
       .slice(0, 150)
       .map((entry) => `
         <tr>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(prettyDate(entry.time))}</td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(entry.user)}</td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(entry.action)}</td>
-          <td class="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">${escapeHtml(entry.patientId || "-")}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(prettyDate(entry.time))}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(entry.user)}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(entry.action)}</td>
+          <td class="px-3 py-2 align-top text-sm text-slate-700">${escapeHtml(entry.patientId || "-")}</td>
         </tr>
       `)
       .join("")
-    : "<tr><td colspan='4' class='text-slate-500 dark:text-slate-400'>No audit entries.</td></tr>";
+    : "<tr><td colspan='4' class='text-slate-500 audit entries.</td></tr>";
 }
 
 function buildDiagnosisSummary(patient) {
@@ -913,14 +1124,14 @@ function buildDiagnosisSummary(patient) {
 }
 
 function addHistory(patient, action) {
-  const entry = timeline(Date.now(), action, state.role);
+  const entry = timeline(Date.now(), action, actorHistoryLabel());
   patient.history.push(entry);
 }
 
 function addAudit(action, patientId = "") {
   state.audit.unshift({
     time: new Date().toISOString(),
-    user: state.role,
+    user: actorName(),
     action,
     patientId
   });
@@ -987,8 +1198,8 @@ function showAlert(message, type = "info") {
   const node = document.createElement("div");
   const base = "rounded-xl border px-3 py-2 text-sm shadow-sm backdrop-blur";
   const tone = type === "error"
-    ? "border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-950/60 dark:text-red-200"
-    : "border-cyan-200 bg-cyan-50 text-cyan-900 dark:border-cyan-900 dark:bg-cyan-950/60 dark:text-cyan-200";
+    ? "border-red-200 bg-red-50 text-red-800"
+    : "border-cyan-200 bg-cyan-50 text-cyan-900";
 
   node.className = `${base} ${tone}`;
   node.textContent = message;
