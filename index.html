@@ -45,8 +45,8 @@
 
 
     <div id="loginOverlay" class="fixed inset-0 z-50 overflow-y-auto bg-slate-950/55 px-4 py-8 backdrop-blur-sm">
-      <div class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl md:grid-cols-[1.15fr_1fr]">
-        <section class="relative hidden overflow-hidden bg-gradient-to-br from-cyan-700 via-cyan-800 to-teal-700 p-8 text-white md:block">
+      <div class="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl lg:grid-cols-[1.15fr_1fr]">
+        <section class="relative hidden overflow-hidden bg-gradient-to-br from-cyan-700 via-cyan-800 to-teal-700 p-8 text-white lg:block">
           <div class="absolute -right-16 -top-10 h-44 w-44 rounded-full bg-white/15 blur-2xl"></div>
           <div class="absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-emerald-200/20 blur-3xl"></div>
           <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100">Patient Management</p>
@@ -79,9 +79,9 @@
         </section>
       </div>
     </div>
-    <div id="appRoot" class="mx-auto max-w-[1600px] px-3 pb-6 pt-3 sm:px-4 md:px-6">
+    <div id="appRoot" class="mx-auto max-w-[1720px] px-3 pb-6 pt-3 sm:px-4 md:px-5 lg:px-6">
       <header class="mb-4 rounded-2xl border border-slate-200 bg-white/90 px-4 py-4 shadow-clinic backdrop-blur sm:px-5">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p class="font-display text-[11px] font-semibold uppercase tracking-[0.18em] text-clinic-600">Interactive Prototype</p>
             <h1 class="mt-1 font-display text-xl font-semibold leading-tight sm:text-2xl">Medical Clinic Patient Workflow System</h1>
@@ -130,38 +130,44 @@
         </div>
       </header>
 
-      <main class="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside class="rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-clinic backdrop-blur lg:sticky lg:top-4 lg:h-fit">
-          <div class="grid grid-cols-2 gap-2 lg:grid-cols-1">
+      <main class="grid gap-4 xl:grid-cols-[260px_minmax(0,1fr)]">
+        <aside class="rounded-2xl border border-slate-200 bg-white/90 p-2 shadow-clinic backdrop-blur xl:sticky xl:top-4 xl:h-fit">
+          <div class="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-1">
             <button
-              class="nav-btn rounded-xl bg-gradient-to-br from-clinic-600 to-clinic-700 px-3 py-2.5 text-left font-display text-sm font-semibold text-white shadow-sm transition"
+              class="nav-btn min-h-[52px] rounded-xl bg-gradient-to-br from-clinic-600 to-clinic-700 px-3 py-2.5 text-left font-display text-sm font-semibold text-white shadow-sm transition"
               data-view="reception"
             >
               Reception
             </button>
             <button
-              class="nav-btn rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+              class="nav-btn min-h-[52px] rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
               data-view="vitals"
             >
               Vitals
             </button>
             <button
-              class="nav-btn rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+              class="nav-btn min-h-[52px] rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
               data-view="exam"
             >
               Examination
             </button>
             <button
-              class="nav-btn rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+              class="nav-btn min-h-[52px] rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
               data-view="diagnosis"
             >
               Diagnosis
             </button>
             <button
-              class="nav-btn col-span-2 rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100 lg:col-span-1"
+              class="nav-btn min-h-[52px] rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
               data-view="reports"
             >
-              Reports & Audit
+              Reports
+            </button>
+            <button
+              class="nav-btn min-h-[52px] rounded-xl bg-slate-50 px-3 py-2.5 text-left font-display text-sm font-semibold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-100"
+              data-view="inventory"
+            >
+              Inventory
             </button>
           </div>
         </aside>
@@ -318,13 +324,155 @@
                   <h2 class="font-display text-lg font-semibold">Examination Notes</h2>
                   <p class="mt-1 text-sm text-slate-500">Selected patient: <span id="examTarget" class="font-medium text-slate-600">None</span></p>
                 </div>
-                <form id="examForm" class="grid grid-cols-1 gap-3">
+                <form id="examForm" class="grid grid-cols-1 gap-4">
                   <input type="hidden" id="examPatientId" />
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Chief Complaint<textarea id="chiefComplaint"></textarea></label>
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Symptoms<textarea id="symptoms"></textarea></label>
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Medical History<textarea id="medicalHistory"></textarea></label>
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Physical Examination Notes<textarea id="physicalNotes"></textarea></label>
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Additional Observations<textarea id="observations"></textarea></label>
+                  <div class="rounded-2xl border border-cyan-100 bg-cyan-50/80 p-4">
+                    <div class="grid gap-3 md:grid-cols-2">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Complaint Category
+                        <select id="complaintCategory">
+                          <option value="">Select category</option>
+                          <option>General</option>
+                          <option>Respiratory</option>
+                          <option>Gastrointestinal</option>
+                          <option>Musculoskeletal</option>
+                          <option>Skin / Soft Tissue</option>
+                          <option>Urinary</option>
+                          <option>ENT</option>
+                          <option>Neurological</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Chief Complaint
+                        <input id="chiefComplaint" list="chiefComplaintSuggestions" placeholder="Start typing to use a suggestion" />
+                      </label>
+                    </div>
+                    <datalist id="chiefComplaintSuggestions"></datalist>
+                    <p class="mt-2 text-xs text-slate-600">Guided categories and autocomplete help standardize triage wording across shifts.</p>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 class="font-display text-sm font-semibold text-slate-900">Symptoms</h3>
+                        <p class="text-xs text-slate-500">Pick from suggestions or add a custom symptom to build a clean symptom list quickly.</p>
+                      </div>
+                    </div>
+                    <div class="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Add Symptom
+                        <input id="symptomPicker" list="symptomSuggestionList" placeholder="e.g. Fever, cough, nausea" />
+                      </label>
+                      <button
+                        id="addSymptomBtn"
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-xl border border-clinic-200 bg-white px-4 py-2 text-sm font-semibold text-clinic-700 transition hover:bg-cyan-50"
+                      >
+                        Add Symptom
+                      </button>
+                    </div>
+                    <datalist id="symptomSuggestionList"></datalist>
+                    <div id="quickSymptomButtons" class="mt-3 flex flex-wrap gap-2"></div>
+                    <div id="selectedSymptomList" class="mt-3 flex flex-wrap gap-2"></div>
+                    <label class="mt-3 grid gap-1 text-xs font-semibold text-slate-500">Additional Symptom Notes<textarea id="symptoms"></textarea></label>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <div>
+                      <h3 class="font-display text-sm font-semibold text-slate-900">Medical History</h3>
+                      <p class="mt-1 text-xs text-slate-500">Use the quick picks for common history flags, then add anything specific in the note field.</p>
+                    </div>
+                    <div id="historyQuickButtons" class="mt-3 flex flex-wrap gap-2"></div>
+                    <div id="selectedHistoryList" class="mt-3 flex flex-wrap gap-2"></div>
+                    <label class="mt-3 grid gap-1 text-xs font-semibold text-slate-500">History Notes<textarea id="medicalHistory"></textarea></label>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <div>
+                      <h3 class="font-display text-sm font-semibold text-slate-900">Physical Examination Guidance</h3>
+                      <p class="mt-1 text-xs text-slate-500">Capture a few standardized findings first, then expand with manual notes where needed.</p>
+                    </div>
+                    <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">General Appearance
+                        <select id="generalAppearance">
+                          <option value="">Select</option>
+                          <option>Well appearing</option>
+                          <option>Mild distress</option>
+                          <option>Moderate distress</option>
+                          <option>Ill appearing</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Hydration
+                        <select id="hydrationStatus">
+                          <option value="">Select</option>
+                          <option>Well hydrated</option>
+                          <option>Mild dehydration</option>
+                          <option>Moderate dehydration</option>
+                          <option>Severe dehydration</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Respiratory Effort
+                        <select id="respiratoryEffort">
+                          <option value="">Select</option>
+                          <option>No distress</option>
+                          <option>Mildly labored</option>
+                          <option>Moderately labored</option>
+                          <option>Severely labored</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Pain Score
+                        <select id="painScore">
+                          <option value="">Select</option>
+                          <option>0/10</option>
+                          <option>1-3/10</option>
+                          <option>4-6/10</option>
+                          <option>7-8/10</option>
+                          <option>9-10/10</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div class="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Exam Template
+                        <select id="physicalTemplate">
+                          <option value="">Select a template</option>
+                        </select>
+                      </label>
+                      <button
+                        id="insertPhysicalTemplateBtn"
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-xl border border-clinic-200 bg-white px-4 py-2 text-sm font-semibold text-clinic-700 transition hover:bg-cyan-50"
+                      >
+                        Insert Template
+                      </button>
+                    </div>
+                    <label class="mt-3 grid gap-1 text-xs font-semibold text-slate-500">Physical Examination Notes<textarea id="physicalNotes"></textarea></label>
+                  </div>
+
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <div>
+                      <h3 class="font-display text-sm font-semibold text-slate-900">Additional Observations</h3>
+                      <p class="mt-1 text-xs text-slate-500">Add quick observation tags, then record handover or escalation notes where relevant.</p>
+                    </div>
+                    <div class="mt-3 grid gap-3 md:grid-cols-2">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Disposition
+                        <select id="disposition">
+                          <option value="">Select</option>
+                          <option>Stable</option>
+                          <option>Needs clinician review</option>
+                          <option>Urgent review</option>
+                          <option>Refer to emergency care</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Escalation
+                        <select id="reviewPriority">
+                          <option value="">Select</option>
+                          <option>Routine</option>
+                          <option>Same shift follow-up</option>
+                          <option>Immediate escalation</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div id="observationQuickButtons" class="mt-3 flex flex-wrap gap-2"></div>
+                    <div id="selectedObservationList" class="mt-3 flex flex-wrap gap-2"></div>
+                    <label class="mt-3 grid gap-1 text-xs font-semibold text-slate-500">Observation Notes<textarea id="observations"></textarea></label>
+                  </div>
                   <label class="grid gap-1 text-xs font-semibold text-slate-500">Attachments (optional)
                     <input id="attachments" type="file" multiple />
                   </label>
@@ -339,7 +487,7 @@
           </section>
 
           <section id="view-diagnosis" class="view hidden space-y-4">
-            <div class="grid gap-4 xl:grid-cols-2">
+            <div class="grid gap-4 xl:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
               <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5">
                 <div class="mb-4">
                   <h2 class="font-display text-lg font-semibold">Diagnosis Queue</h2>
@@ -366,12 +514,41 @@
                   <p class="mt-1 text-sm text-slate-500">Selected patient: <span id="diagnosisTarget" class="font-medium text-slate-600">None</span></p>
                 </div>
                 <div id="diagnosisSummary" class="mb-3 rounded-xl border border-cyan-100 bg-cyan-50 p-3 text-sm text-cyan-900">Select a patient to review vitals and examination notes.</div>
-                <form id="diagnosisForm" class="grid grid-cols-1 gap-3">
+                <form id="diagnosisForm" class="grid grid-cols-1 gap-4">
                   <input type="hidden" id="diagnosisPatientId" />
                   <label class="grid gap-1 text-xs font-semibold text-slate-500">Diagnosis<input id="diagnosisField" /></label>
                   <label class="grid gap-1 text-xs font-semibold text-slate-500">ICD Code (optional)<input id="icdCode" /></label>
                   <label class="grid gap-1 text-xs font-semibold text-slate-500">Treatment Plan<textarea id="treatmentPlan"></textarea></label>
-                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Prescribed Medication<textarea id="medication"></textarea></label>
+                  <div class="rounded-2xl border border-slate-200 bg-slate-50/90 p-4">
+                    <div class="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_110px_auto] lg:items-end">
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Dispense From Inventory
+                        <select id="medicineSelect">
+                          <option value="">Select medicine</option>
+                        </select>
+                      </label>
+                      <label class="grid gap-1 text-xs font-semibold text-slate-500">Qty
+                        <input id="medicineQuantity" type="number" min="1" value="1" />
+                      </label>
+                      <button
+                        id="addMedicineBtn"
+                        type="button"
+                        class="inline-flex items-center justify-center rounded-xl border border-clinic-200 bg-white px-4 py-2 text-sm font-semibold text-clinic-700 transition hover:bg-cyan-50"
+                      >
+                        Add Medicine
+                      </button>
+                    </div>
+                    <div id="medicineSelectionHint" class="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
+                      Select a medicine to preview remaining stock after dispensing.
+                    </div>
+                    <div class="mt-3">
+                      <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Prescription Basket</p>
+                        <p class="text-xs text-slate-500">Inventory is committed when the consultation is saved.</p>
+                      </div>
+                      <div id="selectedMedicineList" class="mt-2 space-y-2"></div>
+                    </div>
+                  </div>
+                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Medication Instructions / Notes<textarea id="medication"></textarea></label>
                   <label class="grid gap-1 text-xs font-semibold text-slate-500">Follow-up Date (optional)<input id="followUpDate" type="date" /></label>
                   <div class="mt-2 flex flex-wrap gap-2">
                     <button class="rounded-xl bg-gradient-to-br from-clinic-600 to-clinic-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105" type="submit">Save Consultation</button>
@@ -388,7 +565,7 @@
                   <h2 class="font-display text-lg font-semibold">Reporting Dashboard</h2>
                   <p class="mt-1 text-sm text-slate-500">Daily patient list, diagnosis summary, and vitals trends.</p>
                 </div>
-                <div id="reportCards" class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+                <div id="reportCards" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"></div>
               </article>
 
               <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5">
@@ -436,6 +613,135 @@
                       </tr>
                     </thead>
                     <tbody id="auditBody" class="divide-y divide-slate-100"></tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </section>
+          <section id="view-inventory" class="view hidden space-y-4">
+            <div class="grid gap-4 xl:grid-cols-2">
+              <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5 xl:col-span-2">
+                <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 class="font-display text-lg font-semibold">Medicine Inventory</h2>
+                    <p class="mt-1 text-sm text-slate-500">Current stock levels, reorder thresholds, and low-stock warnings.</p>
+                  </div>
+                  <p class="text-xs font-medium text-slate-500">Restocks and dispensing events are tracked automatically in the activity log below.</p>
+                </div>
+                <div class="overflow-auto rounded-xl border border-slate-200">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                      <tr>
+                        <th class="px-3 py-2 font-semibold">Medicine</th>
+                        <th class="px-3 py-2 font-semibold">Category</th>
+                        <th class="px-3 py-2 font-semibold">Stock</th>
+                        <th class="px-3 py-2 font-semibold">Reorder Level</th>
+                        <th class="px-3 py-2 font-semibold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody" class="divide-y divide-slate-100"></tbody>
+                  </table>
+                </div>
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5">
+                <div class="mb-4">
+                  <h2 class="font-display text-lg font-semibold">Inventory Management</h2>
+                  <p class="mt-1 text-sm text-slate-500">Create new medicines or update master details for existing stock items.</p>
+                </div>
+                <form id="inventoryItemForm" class="grid grid-cols-1 gap-3">
+                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Load Existing Medicine
+                    <select id="inventoryItemSelect">
+                      <option value="">Create new medicine</option>
+                    </select>
+                  </label>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Medicine Name
+                      <input id="inventoryName" placeholder="e.g. Zinc Sulphate 20mg" />
+                    </label>
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Category
+                      <input id="inventoryCategory" list="inventoryCategorySuggestions" placeholder="e.g. Antibiotic" />
+                    </label>
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Unit
+                      <select id="inventoryUnit">
+                        <option value="">Select unit</option>
+                        <option>tabs</option>
+                        <option>caps</option>
+                        <option>bottles</option>
+                        <option>packs</option>
+                        <option>sachets</option>
+                        <option>inhalers</option>
+                        <option>vials</option>
+                        <option>ml</option>
+                      </select>
+                    </label>
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500">Reorder Level
+                      <input id="inventoryReorderLevel" type="number" min="0" value="0" />
+                    </label>
+                    <label class="grid gap-1 text-xs font-semibold text-slate-500 sm:col-span-2">Opening Stock for New Item
+                      <input id="inventoryOpeningStock" type="number" min="0" value="0" />
+                    </label>
+                  </div>
+                  <datalist id="inventoryCategorySuggestions"></datalist>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <button class="rounded-xl bg-gradient-to-br from-clinic-600 to-clinic-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105" type="submit">Save Medicine</button>
+                    <button class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50" type="button" id="clearInventoryItemBtn">Clear</button>
+                  </div>
+                  <p class="text-xs text-slate-500">Use the restock panel to increase stock and preserve the movement history.</p>
+                </form>
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5">
+                <div class="mb-4">
+                  <h2 class="font-display text-lg font-semibold">Restock Inventory</h2>
+                  <p class="mt-1 text-sm text-slate-500">Record deliveries and manual stock top-ups with a clear audit trail.</p>
+                </div>
+                <form id="restockForm" class="grid grid-cols-1 gap-3">
+                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Medicine
+                    <select id="restockMedicineId">
+                      <option value="">Select medicine</option>
+                    </select>
+                  </label>
+                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Quantity Added
+                    <input id="restockQuantity" type="number" min="1" value="1" />
+                  </label>
+                  <label class="grid gap-1 text-xs font-semibold text-slate-500">Reason
+                    <select id="restockReason">
+                      <option>Supplier delivery</option>
+                      <option>Emergency top-up</option>
+                      <option>Stock correction</option>
+                    </select>
+                  </label>
+                  <button class="rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-105" type="submit">Add Stock</button>
+                </form>
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5">
+                <div class="mb-4">
+                  <h2 class="font-display text-lg font-semibold">Low Stock Alerts</h2>
+                  <p class="mt-1 text-sm text-slate-500">Medicines at or below reorder level are surfaced here for quick action.</p>
+                </div>
+                <div id="lowStockAlertsList" class="space-y-2"></div>
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-clinic sm:p-5 xl:col-span-2">
+                <div class="mb-4">
+                  <h2 class="font-display text-lg font-semibold">Inventory Activity</h2>
+                  <p class="mt-1 text-sm text-slate-500">Recent dispensing, restocking, and medicine master-data changes.</p>
+                </div>
+                <div class="overflow-auto rounded-xl border border-slate-200">
+                  <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                      <tr>
+                        <th class="px-3 py-2 font-semibold">Time</th>
+                        <th class="px-3 py-2 font-semibold">Type</th>
+                        <th class="px-3 py-2 font-semibold">Medicine</th>
+                        <th class="px-3 py-2 font-semibold">Change</th>
+                        <th class="px-3 py-2 font-semibold">Balance</th>
+                        <th class="px-3 py-2 font-semibold">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody id="inventoryActivityBody" class="divide-y divide-slate-100"></tbody>
                   </table>
                 </div>
               </article>
